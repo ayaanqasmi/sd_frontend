@@ -21,11 +21,22 @@ export default function Home() {
     setError("");
 
     try {
-      // For now, im using a placeholder image API. Change this to where you deployed the api and also add the domain to next.config.ts
-      const response = await fetch("https://picsum.photos/512");
+      // Sending the user-provided prompt in the format {"prompt": prompt}
+      const response = await fetch("http://35.209.224.192:8000/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt }) // Correctly formatted request body
+      });
+
       if (!response.ok) throw new Error("Failed to generate image");
 
-      setGeneratedImage(response.url);
+      // Parse the JSON response
+      const data = await response.json();
+
+      // Assuming the image is base64-encoded and directly included in the response
+      setGeneratedImage(data.image);
     } catch (err) {
       setError("Failed to generate image. Please try again.");
     } finally {
@@ -73,8 +84,8 @@ export default function Home() {
         {/* Right Section - Generated Image */}
         <div className="flex flex-col items-center justify-center min-h-[400px] border rounded-lg p-4">
           {generatedImage ? (
-            <Image
-              src={generatedImage}
+            <img
+              src={`data:image/png;base64,${generatedImage}`} // Display base64 encoded image
               alt="Generated image"
               width={512}
               height={512}
